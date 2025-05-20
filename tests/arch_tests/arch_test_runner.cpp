@@ -5,10 +5,12 @@
 #include <memory>
 #include <functional>
 #include <chrono>
+#include <cstdint>
+#include <cstring>
 
-#include "jit_core/jit_api.h"
-#include "xenoarm_jit/memory_manager.h"
-#include "logging/logger.h"
+#include "xenoarm_jit/jit_api.h"       
+#include "xenoarm_jit/memory_manager.h" 
+#include "xenoarm_jit/logging/logger.h"
 
 // Use proper namespaces
 using namespace xenoarm_jit;
@@ -62,55 +64,55 @@ std::vector<ArchTest> loadTest386Tests(const std::string& filename) {
 // Memory access callbacks
 static uint8_t readMemoryU8(uint32_t address, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
-    return memManager->readByte(address);
+    return memManager->read_u8(address);
 }
 
 static uint16_t readMemoryU16(uint32_t address, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
-    return memManager->readWord(address);
+    return memManager->read_u16(address);
 }
 
 static uint32_t readMemoryU32(uint32_t address, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
-    return memManager->readDWord(address);
+    return memManager->read_u32(address);
 }
 
 static uint64_t readMemoryU64(uint32_t address, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
-    return memManager->readQWord(address);
+    return memManager->read_u64(address);
 }
 
 static void writeMemoryU8(uint32_t address, uint8_t value, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
-    memManager->writeByte(address, value);
+    memManager->write_u8(address, value);
 }
 
 static void writeMemoryU16(uint32_t address, uint16_t value, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
-    memManager->writeWord(address, value);
+    memManager->write_u16(address, value);
 }
 
 static void writeMemoryU32(uint32_t address, uint32_t value, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
-    memManager->writeDWord(address, value);
+    memManager->write_u32(address, value);
 }
 
 static void writeMemoryU64(uint32_t address, uint64_t value, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
-    memManager->writeQWord(address, value);
+    memManager->write_u64(address, value);
 }
 
 static void readMemoryBlock(uint32_t address, void* buffer, uint32_t size, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
     for (uint32_t i = 0; i < size; i++) {
-        static_cast<uint8_t*>(buffer)[i] = memManager->readByte(address + i);
+        static_cast<uint8_t*>(buffer)[i] = memManager->read_u8(address + i);
     }
 }
 
 static void writeMemoryBlock(uint32_t address, const void* buffer, uint32_t size, void* userData) {
     auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userData);
     for (uint32_t i = 0; i < size; i++) {
-        memManager->writeByte(address + i, static_cast<const uint8_t*>(buffer)[i]);
+        memManager->write_u8(address + i, static_cast<const uint8_t*>(buffer)[i]);
     }
 }
 
@@ -119,11 +121,11 @@ bool runArchTest(const ArchTest& test) {
     std::cout << "Running test: " << test.name << std::endl;
     
     // Initialize memory manager
-    auto memManager = std::make_unique<xenoarm_jit::MemoryManager>(1024 * 1024); // 1MB memory
+    auto memManager = std::make_unique<xenoarm_jit::MemoryManager>(nullptr, 4096); // Using 4096 as default page size
     
     // Load test code into memory
     for (size_t i = 0; i < test.code.size(); i++) {
-        memManager->writeByte(test.entryPoint + i, test.code[i]);
+        memManager->write_u8(test.entryPoint + i, test.code[i]);
     }
     
     // Initialize JIT
@@ -133,10 +135,10 @@ bool runArchTest(const ArchTest& test) {
     config.memoryReadCallback = [](void* userdata, uint64_t address, uint32_t size) -> uint64_t {
         auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userdata);
         switch (size) {
-            case 1: return memManager->readByte(address);
-            case 2: return memManager->readWord(address);
-            case 4: return memManager->readDWord(address);
-            case 8: return memManager->readQWord(address);
+            case 1: return memManager->read_u8(address);
+            case 2: return memManager->read_u16(address);
+            case 4: return memManager->read_u32(address);
+            case 8: return memManager->read_u64(address);
             default: return 0;
         }
     };
@@ -144,10 +146,10 @@ bool runArchTest(const ArchTest& test) {
     config.memoryWriteCallback = [](void* userdata, uint64_t address, uint64_t value, uint32_t size) {
         auto memManager = static_cast<xenoarm_jit::MemoryManager*>(userdata);
         switch (size) {
-            case 1: memManager->writeByte(address, static_cast<uint8_t>(value)); break;
-            case 2: memManager->writeWord(address, static_cast<uint16_t>(value)); break;
-            case 4: memManager->writeDWord(address, static_cast<uint32_t>(value)); break;
-            case 8: memManager->writeQWord(address, value); break;
+            case 1: memManager->write_u8(address, static_cast<uint8_t>(value)); break;
+            case 2: memManager->write_u16(address, static_cast<uint16_t>(value)); break;
+            case 4: memManager->write_u32(address, static_cast<uint32_t>(value)); break;
+            case 8: memManager->write_u64(address, value); break;
         }
     };
     

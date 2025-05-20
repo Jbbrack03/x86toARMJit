@@ -7,10 +7,13 @@
 #include <algorithm>
 #include <iomanip>
 #include <cmath>
+#include <functional>
+#include <cstdint>
+#include <cstring>
 
-#include "jit_core/jit_api.h"
+#include "xenoarm_jit/jit_api.h"
 #include "xenoarm_jit/memory_manager.h"
-#include "logging/logger.h"
+#include "xenoarm_jit/logging/logger.h"
 
 // Use proper namespaces
 using namespace xenoarm_jit;
@@ -210,7 +213,7 @@ void runTranslationBenchmark(std::ofstream& reportFile) {
         std::cout << "  " << benchmark.name << "..." << std::endl;
         
         // Initialize memory manager
-        auto memManager = std::make_unique<MemoryManager>(1024 * 1024); // 1MB memory
+        auto memManager = std::make_unique<MemoryManager>(nullptr, 4096); // Using 4096 as default page size
         
         // Initialize JIT
         JitState* state = nullptr;
@@ -219,10 +222,10 @@ void runTranslationBenchmark(std::ofstream& reportFile) {
         config.memoryReadCallback = [](void* userdata, uint64_t address, uint32_t size) -> uint64_t {
             auto memManager = static_cast<MemoryManager*>(userdata);
             switch (size) {
-                case 1: return memManager->read_byte(address);
-                case 2: return memManager->read_word(address);
-                case 4: return memManager->read_dword(address);
-                case 8: return memManager->read_qword(address);
+                case 1: return memManager->read_u8(address);
+                case 2: return memManager->read_u16(address);
+                case 4: return memManager->read_u32(address);
+                case 8: return memManager->read_u64(address);
                 default: return 0;
             }
         };
@@ -230,10 +233,10 @@ void runTranslationBenchmark(std::ofstream& reportFile) {
         config.memoryWriteCallback = [](void* userdata, uint64_t address, uint64_t value, uint32_t size) {
             auto memManager = static_cast<MemoryManager*>(userdata);
             switch (size) {
-                case 1: memManager->write_byte(address, static_cast<uint8_t>(value)); break;
-                case 2: memManager->write_word(address, static_cast<uint16_t>(value)); break;
-                case 4: memManager->write_dword(address, static_cast<uint32_t>(value)); break;
-                case 8: memManager->write_qword(address, value); break;
+                case 1: memManager->write_u8(address, static_cast<uint8_t>(value)); break;
+                case 2: memManager->write_u16(address, static_cast<uint16_t>(value)); break;
+                case 4: memManager->write_u32(address, static_cast<uint32_t>(value)); break;
+                case 8: memManager->write_u64(address, value); break;
             }
         };
         
@@ -248,7 +251,7 @@ void runTranslationBenchmark(std::ofstream& reportFile) {
         for (size_t i = 0; i < benchmark.warmupIterations; i++) {
             // Load test code into memory
             for (size_t j = 0; j < benchmark.code.size(); j++) {
-                memManager->write_byte(benchmark.entryPoint + j, benchmark.code[j]);
+                memManager->write_u8(benchmark.entryPoint + j, benchmark.code[j]);
             }
             
             // Clear TC to force retranslation
@@ -266,7 +269,7 @@ void runTranslationBenchmark(std::ofstream& reportFile) {
         for (size_t i = 0; i < benchmark.iterations; i++) {
             // Load test code into memory
             for (size_t j = 0; j < benchmark.code.size(); j++) {
-                memManager->write_byte(benchmark.entryPoint + j, benchmark.code[j]);
+                memManager->write_u8(benchmark.entryPoint + j, benchmark.code[j]);
             }
             
             // Clear TC to force retranslation
@@ -365,16 +368,16 @@ void runExecutionBenchmark(std::ofstream& reportFile) {
         std::cout << "  " << benchmark.name << "..." << std::endl;
         
         // Initialize memory manager
-        auto memManager = std::make_unique<MemoryManager>(4 * 1024 * 1024); // 4MB memory
+        auto memManager = std::make_unique<MemoryManager>(nullptr, 4096); // Using 4096 as default page size
         
         // Initialize memory with data for memory benchmark
         for (int i = 0; i < 1000000; i++) {
-            memManager->write_dword(0x2000 + i * 4, i);
+            memManager->write_u32(0x2000 + i * 4, i);
         }
         
         // Load test code into memory
         for (size_t i = 0; i < benchmark.code.size(); i++) {
-            memManager->write_byte(benchmark.entryPoint + i, benchmark.code[i]);
+            memManager->write_u8(benchmark.entryPoint + i, benchmark.code[i]);
         }
         
         // Initialize JIT
@@ -384,10 +387,10 @@ void runExecutionBenchmark(std::ofstream& reportFile) {
         config.memoryReadCallback = [](void* userdata, uint64_t address, uint32_t size) -> uint64_t {
             auto memManager = static_cast<MemoryManager*>(userdata);
             switch (size) {
-                case 1: return memManager->read_byte(address);
-                case 2: return memManager->read_word(address);
-                case 4: return memManager->read_dword(address);
-                case 8: return memManager->read_qword(address);
+                case 1: return memManager->read_u8(address);
+                case 2: return memManager->read_u16(address);
+                case 4: return memManager->read_u32(address);
+                case 8: return memManager->read_u64(address);
                 default: return 0;
             }
         };
@@ -395,10 +398,10 @@ void runExecutionBenchmark(std::ofstream& reportFile) {
         config.memoryWriteCallback = [](void* userdata, uint64_t address, uint64_t value, uint32_t size) {
             auto memManager = static_cast<MemoryManager*>(userdata);
             switch (size) {
-                case 1: memManager->write_byte(address, static_cast<uint8_t>(value)); break;
-                case 2: memManager->write_word(address, static_cast<uint16_t>(value)); break;
-                case 4: memManager->write_dword(address, static_cast<uint32_t>(value)); break;
-                case 8: memManager->write_qword(address, value); break;
+                case 1: memManager->write_u8(address, static_cast<uint8_t>(value)); break;
+                case 2: memManager->write_u16(address, static_cast<uint16_t>(value)); break;
+                case 4: memManager->write_u32(address, static_cast<uint32_t>(value)); break;
+                case 8: memManager->write_u64(address, value); break;
             }
         };
         
@@ -437,7 +440,7 @@ void runExecutionBenchmark(std::ofstream& reportFile) {
             jit_run(state);
             auto endTime = std::chrono::high_resolution_clock::now();
             
-            auto duration = std::chrono::duration_cast<std::microseconds>(endTime - startTime);
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
             times.push_back(duration.count());
         }
         
@@ -483,7 +486,7 @@ void runTCBenchmark(std::ofstream& reportFile) {
     reportFile << "---------------------------" << std::endl;
     
     // Initialize memory manager
-    auto memManager = std::make_unique<MemoryManager>(1024 * 1024); // 1MB memory
+    auto memManager = std::make_unique<MemoryManager>(nullptr, 4096); // Using 4096 as default page size
     
     // Create 100 different code blocks
     const int numBlocks = 100;
@@ -514,7 +517,7 @@ void runTCBenchmark(std::ofstream& reportFile) {
         
         // Load block into memory
         for (size_t j = 0; j < block.size(); j++) {
-            memManager->write_byte(blockAddresses[i] + j, block[j]);
+            memManager->write_u8(blockAddresses[i] + j, block[j]);
         }
     }
     
@@ -525,10 +528,10 @@ void runTCBenchmark(std::ofstream& reportFile) {
     config.memoryReadCallback = [](void* userdata, uint64_t address, uint32_t size) -> uint64_t {
         auto memManager = static_cast<MemoryManager*>(userdata);
         switch (size) {
-            case 1: return memManager->read_byte(address);
-            case 2: return memManager->read_word(address);
-            case 4: return memManager->read_dword(address);
-            case 8: return memManager->read_qword(address);
+            case 1: return memManager->read_u8(address);
+            case 2: return memManager->read_u16(address);
+            case 4: return memManager->read_u32(address);
+            case 8: return memManager->read_u64(address);
             default: return 0;
         }
     };
@@ -536,10 +539,10 @@ void runTCBenchmark(std::ofstream& reportFile) {
     config.memoryWriteCallback = [](void* userdata, uint64_t address, uint64_t value, uint32_t size) {
         auto memManager = static_cast<MemoryManager*>(userdata);
         switch (size) {
-            case 1: memManager->write_byte(address, static_cast<uint8_t>(value)); break;
-            case 2: memManager->write_word(address, static_cast<uint16_t>(value)); break;
-            case 4: memManager->write_dword(address, static_cast<uint32_t>(value)); break;
-            case 8: memManager->write_qword(address, value); break;
+            case 1: memManager->write_u8(address, static_cast<uint8_t>(value)); break;
+            case 2: memManager->write_u16(address, static_cast<uint16_t>(value)); break;
+            case 4: memManager->write_u32(address, static_cast<uint32_t>(value)); break;
+            case 8: memManager->write_u64(address, value); break;
         }
     };
     
@@ -560,7 +563,7 @@ void runTCBenchmark(std::ofstream& reportFile) {
     
     jit_clear_translation_cache(state);
     
-    std::vector<double> coldTimes;
+    std::vector<std::chrono::microseconds> coldTimes;
     for (int i = 0; i < numBlocks; i++) {
         jit_set_guest_register(state, JIT_REG_EIP, blockAddresses[i]);
         
@@ -568,24 +571,24 @@ void runTCBenchmark(std::ofstream& reportFile) {
         jit_run(state);
         auto endTime = std::chrono::high_resolution_clock::now();
         
-        auto duration = std::chrono::duration_cast<std::microseconds>(endTime - startTime);
-        coldTimes.push_back(duration.count());
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+        coldTimes.push_back(duration);
     }
     
     // Calculate cold cache statistics
-    double coldSum = 0;
-    for (double time : coldTimes) {
-        coldSum += time;
+    std::chrono::microseconds coldTotalTime = std::chrono::microseconds::zero();
+    for (const auto& time : coldTimes) {
+        coldTotalTime += time;
     }
-    double coldMean = coldSum / coldTimes.size();
+    auto coldAvgTime = std::chrono::duration_cast<std::chrono::microseconds>(coldTotalTime / numBlocks);
     
-    reportFile << "    Mean Time: " << std::fixed << std::setprecision(2) << coldMean << " µs" << std::endl;
+    reportFile << "    Mean Time: " << coldAvgTime.count() << " µs" << std::endl;
     
     // Benchmark 2: Subsequent runs (warm cache)
     std::cout << "  Warm cache execution..." << std::endl;
     reportFile << "  Warm Cache Execution:" << std::endl;
     
-    std::vector<double> warmTimes;
+    std::vector<std::chrono::microseconds> warmTimes;
     
     // Access each block again
     for (int i = 0; i < numBlocks; i++) {
@@ -595,21 +598,21 @@ void runTCBenchmark(std::ofstream& reportFile) {
         jit_run(state);
         auto endTime = std::chrono::high_resolution_clock::now();
         
-        auto duration = std::chrono::duration_cast<std::microseconds>(endTime - startTime);
-        warmTimes.push_back(duration.count());
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+        warmTimes.push_back(duration);
     }
     
     // Calculate warm cache statistics
-    double warmSum = 0;
-    for (double time : warmTimes) {
-        warmSum += time;
+    std::chrono::microseconds warmTotalTime = std::chrono::microseconds::zero();
+    for (const auto& time : warmTimes) {
+        warmTotalTime += time;
     }
-    double warmMean = warmSum / warmTimes.size();
+    auto warmAvgTime = std::chrono::duration_cast<std::chrono::microseconds>(warmTotalTime / numBlocks);
     
-    reportFile << "    Mean Time: " << std::fixed << std::setprecision(2) << warmMean << " µs" << std::endl;
+    reportFile << "    Mean Time: " << warmAvgTime.count() << " µs" << std::endl;
     
     // Calculate performance improvement
-    double improvement = (coldMean - warmMean) / coldMean * 100.0;
+    double improvement = static_cast<double>(coldAvgTime.count() - warmAvgTime.count()) / coldAvgTime.count() * 100.0;
     reportFile << "  Cache Performance Improvement: " << std::fixed << std::setprecision(2) << improvement << "%" << std::endl;
     reportFile << std::endl;
     
