@@ -3,6 +3,7 @@
 #include "xenoarm_jit/simd_helpers.h"
 #include <cmath>
 #include <limits>
+#include <cstring>
 
 using namespace xenoarm_jit::simd;
 
