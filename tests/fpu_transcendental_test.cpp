@@ -5,6 +5,7 @@
 #include "xenoarm_jit/fpu_transcendental_helpers.h"
 #include <vector>
 #include <cmath>
+#include <cstring>
 
 // Mock classes for testing purposes
 namespace xenoarm_jit {
