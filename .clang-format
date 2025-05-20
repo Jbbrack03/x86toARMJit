@@ -1,0 +1,57 @@
+# Clang-Format Configuration for XenoARM JIT
+# Based on Google C++ Style Guide
+# Reference: https://google.github.io/styleguide/cppguide.html
+# Clang-Format Docs: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+BasedOnStyle: Google
+
+# Customizations (Examples - adjust as needed after discussion)
+# Language: Cpp
+# Standard: Cpp17 # Ensure C++17 features are formatted correctly
+
+# ColumnLimit: 80 # Default for Google Style, can be increased if preferred (e.g., 100 or 120)
+
+# IndentWidth: 2 # Default for Google Style
+# UseTab: Never # Default for Google Style
+
+# BraceWrapping:
+#   AfterClass: false # Google style typically has class opening brace on same line
+#   AfterControlStatement: KAndR # Or 'AlwaysNextLine' if Allman preferred for if/else/for/while
+#   AfterEnum: false
+#   AfterFunction: false # Google style typically has function opening brace on same line
+#   AfterNamespace: false
+#   AfterObjCDeclaration: false
+#   AfterStruct: false
+#   AfterUnion: false
+#   AfterExternBlock: false
+#   BeforeCatch: true # K&R
+#   BeforeElse: true  # K&R
+#   IndentBraces: false
+#   SplitEmptyFunction: true
+#   SplitEmptyRecord: true
+#   SplitEmptyNamespace: true
+
+# PointerAlignment: Left # Options: Left, Right, Middle. Google: 'Left' (int* p) or 'Right' (int *p) - check current Google guide.
+                         # Clang-Format default for Google is usually 'Left' (int* p).
+
+# AllowShortFunctionsOnASingleLine: Empty # Or 'None', 'InlineOnly', 'All'. Google: 'None' or 'Empty'.
+# AllowShortBlocksOnASingleLine: false
+# AllowShortCaseLabelsOnASingleLine: false
+# AllowShortIfStatementsOnASingleLine: Never # Google: 'Never' or 'WithoutElse'
+# AllowShortLoopsOnASingleLine: false
+
+# NamespaceIndentation: None # Or 'Inner', 'All'
+
+# Cpp11BracedListStyle: true # For {}-initialization
+
+# SortIncludes: true # Recommended
+# IncludeBlocks: Regroup # Preserve, Merge, Regroup
+# IncludeCategories:
+#  - Regex:           '^<.*\.h>' # System C headers
+#    Priority:        1
+#  - Regex:           '^<.*>'    # System C++ headers
+#    Priority:        2
+#  - Regex:           '.*'       # Project headers
+#    Priority:        3
+
+# --- End of .clang-format ---
