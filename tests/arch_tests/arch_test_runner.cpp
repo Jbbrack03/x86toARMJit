@@ -8,9 +8,9 @@
 #include <cstdint>
 #include <cstring>
 
-#include "xenoarm_jit/jit_api.h"       
+#include "jit_core/jit_api.h"       
 #include "xenoarm_jit/memory_manager.h" 
-#include "xenoarm_jit/logging/logger.h"
+#include "logging/logger.h"
 
 // Use proper namespaces
 using namespace xenoarm_jit;
