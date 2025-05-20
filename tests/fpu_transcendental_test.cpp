@@ -6,6 +6,7 @@
 #include <vector>
 #include <cmath>
 #include <cstring>
+#include <cstring> // For std::memcpy
 
 // Mock classes for testing purposes
 namespace xenoarm_jit {
