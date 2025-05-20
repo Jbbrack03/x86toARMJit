@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "jit_core/c_api.h"       
 #include "jit_core/jit_api.h"       
 #include "xenoarm_jit/memory_manager.h" 
 #include "logging/logger.h"

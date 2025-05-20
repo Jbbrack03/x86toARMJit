@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "jit_core/c_api.h"
 #include "jit_core/jit_api.h"
 #include "xenoarm_jit/memory_manager.h"
 #include "logging/logger.h"
@@ -283,7 +284,7 @@ void runTranslationBenchmark(std::ofstream& reportFile) {
             jit_translate(state, benchmark.entryPoint);
             auto endTime = std::chrono::high_resolution_clock::now();
             
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
             times.push_back(duration.count());
         }
         
@@ -310,11 +311,11 @@ void runTranslationBenchmark(std::ofstream& reportFile) {
         
         // Report results
         reportFile << "  " << benchmark.name << ":" << std::endl;
-        reportFile << "    Mean: " << std::fixed << std::setprecision(2) << mean << " µs" << std::endl;
-        reportFile << "    Median: " << std::fixed << std::setprecision(2) << median << " µs" << std::endl;
-        reportFile << "    Min: " << std::fixed << std::setprecision(2) << min << " µs" << std::endl;
-        reportFile << "    Max: " << std::fixed << std::setprecision(2) << max << " µs" << std::endl;
-        reportFile << "    StdDev: " << std::fixed << std::setprecision(2) << stddev << " µs" << std::endl;
+        reportFile << "    Mean: " << std::fixed << std::setprecision(2) << mean << " ms" << std::endl;
+        reportFile << "    Median: " << std::fixed << std::setprecision(2) << median << " ms" << std::endl;
+        reportFile << "    Min: " << std::fixed << std::setprecision(2) << min << " ms" << std::endl;
+        reportFile << "    Max: " << std::fixed << std::setprecision(2) << max << " ms" << std::endl;
+        reportFile << "    StdDev: " << std::fixed << std::setprecision(2) << stddev << " ms" << std::endl;
         reportFile << std::endl;
         
         // Clean up
@@ -440,7 +441,7 @@ void runExecutionBenchmark(std::ofstream& reportFile) {
             jit_run(state);
             auto endTime = std::chrono::high_resolution_clock::now();
             
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
             times.push_back(duration.count());
         }
         
@@ -467,11 +468,11 @@ void runExecutionBenchmark(std::ofstream& reportFile) {
         
         // Report results
         reportFile << "  " << benchmark.name << ":" << std::endl;
-        reportFile << "    Mean: " << std::fixed << std::setprecision(2) << mean << " µs" << std::endl;
-        reportFile << "    Median: " << std::fixed << std::setprecision(2) << median << " µs" << std::endl;
-        reportFile << "    Min: " << std::fixed << std::setprecision(2) << min << " µs" << std::endl;
-        reportFile << "    Max: " << std::fixed << std::setprecision(2) << max << " µs" << std::endl;
-        reportFile << "    StdDev: " << std::fixed << std::setprecision(2) << stddev << " µs" << std::endl;
+        reportFile << "    Mean: " << std::fixed << std::setprecision(2) << mean << " ms" << std::endl;
+        reportFile << "    Median: " << std::fixed << std::setprecision(2) << median << " ms" << std::endl;
+        reportFile << "    Min: " << std::fixed << std::setprecision(2) << min << " ms" << std::endl;
+        reportFile << "    Max: " << std::fixed << std::setprecision(2) << max << " ms" << std::endl;
+        reportFile << "    StdDev: " << std::fixed << std::setprecision(2) << stddev << " ms" << std::endl;
         reportFile << std::endl;
         
         // Clean up
@@ -563,7 +564,7 @@ void runTCBenchmark(std::ofstream& reportFile) {
     
     jit_clear_translation_cache(state);
     
-    std::vector<std::chrono::microseconds> coldTimes;
+    std::vector<std::chrono::milliseconds> coldTimes;
     for (int i = 0; i < numBlocks; i++) {
         jit_set_guest_register(state, JIT_REG_EIP, blockAddresses[i]);
         
@@ -571,7 +572,7 @@ void runTCBenchmark(std::ofstream& reportFile) {
         jit_run(state);
         auto endTime = std::chrono::high_resolution_clock::now();
         
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
         coldTimes.push_back(duration);
     }
     
@@ -650,7 +651,7 @@ int main(int argc, char** argv) {
     runTCBenchmark(reportFile);
     
     auto endTime = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::milliseconds>(endTime - startTime);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     
     // Print summary
     reportFile << "Total benchmark time: " << duration.count() << "ms" << std::endl;

@@ -3,6 +3,7 @@ add_library(xenoarm_jit STATIC
     logging/logger.cpp
     jit_core/jit_api.cpp
     jit_core/exception_handler.cpp
+    jit_core/c_api_stubs.cpp
     decoder/x86_decoder.cpp
     decoder/fpu_decoder.cpp
     decoder/decoder.cpp
@@ -31,6 +32,7 @@ target_include_directories(xenoarm_jit PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/logging
+    ${CMAKE_CURRENT_SOURCE_DIR}/jit_core
     ${CMAKE_CURRENT_SOURCE_DIR}/translation_cache
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src

@@ -7,6 +7,8 @@ add_executable(arch_test_runner arch_test_runner.cpp)
 target_include_directories(arch_test_runner PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/logging
+    ${CMAKE_SOURCE_DIR}/src/jit_core
 )
 
 # Link against the JIT library and other dependencies

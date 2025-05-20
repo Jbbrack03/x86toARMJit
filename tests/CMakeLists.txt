@@ -16,6 +16,8 @@ FetchContent_MakeAvailable(googletest)
 include_directories(
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/src
+  ${CMAKE_SOURCE_DIR}/src/logging
+  ${CMAKE_SOURCE_DIR}/src/jit_core
 )
 
 # Add test subdirectories based on skip options
