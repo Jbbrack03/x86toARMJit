@@ -3,6 +3,12 @@
 # Add the executable
 add_executable(arch_test_runner arch_test_runner.cpp)
 
+# Explicitly set include directories
+target_include_directories(arch_test_runner PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src
+)
+
 # Link against the JIT library and other dependencies
 target_link_libraries(arch_test_runner
     xenoarm_jit
